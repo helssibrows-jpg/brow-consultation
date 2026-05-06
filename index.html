@@ -149,6 +149,63 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font
 
 .iri-fs-hint{flex-shrink:0;text-align:center;font-size:11px;
   color:rgba(255,255,255,0.3);padding:8px 0 16px;}
+.search-wrap{padding:12px 20px;background:var(--white);border-bottom:1px solid var(--border);}
+.search-input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--ink);
+  font-family:'DM Sans',sans-serif;font-size:13px;padding:10px 14px 10px 36px;
+  border-radius:8px;outline:none;transition:border-color 0.2s;}
+.search-input:focus{border-color:var(--accent);}
+.search-wrap-inner{position:relative;}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);
+  color:var(--muted);font-size:14px;pointer-events:none;}
+.visit-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;}
+.visit-date{flex-shrink:0;width:110px;}
+.visit-date input{width:100%;background:var(--white);border:1px solid var(--border);
+  color:var(--ink);font-family:'DM Sans',sans-serif;font-size:11px;padding:8px;
+  border-radius:6px;outline:none;}
+.visit-note{flex:1;}
+.visit-note textarea{width:100%;background:var(--white);border:1px solid var(--border);
+  color:var(--ink);font-family:'DM Sans',sans-serif;font-size:12px;padding:8px;
+  border-radius:6px;outline:none;resize:none;line-height:1.5;}
+.visit-label{font-size:9px;letter-spacing:1px;text-transform:uppercase;
+  color:var(--muted);margin-bottom:4px;}
+.card-del{position:absolute;top:10px;right:10px;width:28px;height:28px;
+  border-radius:50%;border:1px solid var(--border);background:var(--white);
+  color:var(--muted);font-size:14px;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;opacity:0;transition:opacity 0.2s;z-index:10;}
+.card:hover .card-del{opacity:1;}
+.card{position:relative;}
+.card{position:relative;}
+.card-del-btn{position:absolute;bottom:12px;right:12px;padding:4px 10px;
+  border:1px solid rgba(184,84,80,0.3);border-radius:5px;background:none;
+  color:var(--no);font-size:10px;cursor:pointer;transition:all 0.2s;z-index:5;}
+.card-del-btn:hover{background:#FDF0F0;border-color:var(--no);}
+/* 확인 팝업 */
+.confirm-overlay{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,0.4);
+  display:none;align-items:center;justify-content:center;}
+.confirm-overlay.on{display:flex;}
+.confirm-box{background:var(--white);border-radius:12px;padding:24px;width:280px;
+  box-shadow:0 8px 30px rgba(0,0,0,0.15);}
+.confirm-title{font-family:'DM Serif Display',serif;font-size:17px;margin-bottom:8px;}
+.confirm-msg{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:20px;}
+.confirm-btns{display:flex;gap:8px;}
+.confirm-cancel{flex:1;padding:11px;border:1px solid var(--border);border-radius:7px;
+  background:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--muted);cursor:pointer;}
+.confirm-ok{flex:1;padding:11px;border:none;border-radius:7px;
+  background:var(--no);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;}
+.page-menu-btn{background:none;border:1px solid var(--border);border-radius:7px;
+  padding:6px 12px;font-family:'DM Sans',sans-serif;font-size:11px;color:var(--muted);
+  cursor:pointer;display:flex;align-items:center;gap:5px;transition:all 0.2s;}
+.page-menu-btn:hover{border-color:var(--accent);color:var(--accent);}
+.page-dropdown{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+  background:var(--white);border:1px solid var(--border);border-radius:12px;
+  box-shadow:0 4px 24px rgba(0,0,0,0.12);z-index:200;overflow:hidden;
+  display:none;min-width:200px;}
+.page-dropdown.on{display:block;}
+.page-dropdown-item{padding:12px 18px;font-size:13px;cursor:pointer;
+  display:flex;align-items:center;gap:10px;transition:background 0.15s;}
+.page-dropdown-item:hover{background:var(--accent-light);}
+.page-dropdown-item.active{color:var(--active);font-weight:500;background:var(--accent-light);}
+.page-dropdown-num{font-size:10px;color:var(--muted);width:20px;flex-shrink:0;}
 .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--active);color:#fff;padding:10px 20px;border-radius:8px;font-size:12px;opacity:0;pointer-events:none;transition:all 0.3s;z-index:200;white-space:nowrap;}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
@@ -176,6 +233,12 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font
       <div class="stat"><div class="stat-n" id="s-top">—</div><div class="stat-l">Top</div></div>
     </div>
   </div>
+  <div class="search-wrap">
+    <div class="search-wrap-inner">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="search-input" type="text" placeholder="이름으로 검색..." oninput="filterList(this.value)">
+    </div>
+  </div>
   <div class="list-body" id="list-body">
     <div class="empty"><div class="empty-icon">✦</div><div class="empty-txt">아직 상담 기록이 없어요</div></div>
   </div>
@@ -191,7 +254,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font
 
     <!-- S0: 고객 정보 -->
     <div class="sec on" id="s0">
-      <div class="sec-head"><div class="sec-num">01 / 09</div><div class="sec-title">고객 정보</div></div>
+      <div class="sec-head" style="display:flex;align-items:center;justify-content:space-between;"><div><div class="sec-num">01 / 09</div><div class="sec-title">고객 정보</div></div><button onclick="saveClient()" style="padding:7px 13px;border:1px solid var(--accent);border-radius:7px;background:var(--accent-light);font-family:'DM Sans',sans-serif;font-size:12px;color:var(--active);cursor:pointer;flex-shrink:0;">저장</button></div>
       <div class="sec-body">
         <div class="field-row">
           <div class="field"><label>이름</label><input class="finput" id="f-name" placeholder="홍길동" type="text"></div>
@@ -227,7 +290,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font
 
     <!-- S1: 원하는 이미지 -->
     <div class="sec" id="s1">
-      <div class="sec-head"><div class="sec-num">02 / 09</div><div class="sec-title">원하는 이미지</div></div>
+      <div class="sec-head" style="display:flex;align-items:center;justify-content:space-between;"><div><div class="sec-num">02 / 09</div><div class="sec-title">원하는 이미지</div></div><button onclick="saveClient()" style="padding:7px 13px;border:1px solid var(--accent);border-radius:7px;background:var(--accent-light);font-family:'DM Sans',sans-serif;font-size:12px;color:var(--active);cursor:pointer;flex-shrink:0;">저장</button></div>
       <div class="sec-body">
         <div class="grp">
           <div class="grp-title">고민 / 요청사항</div>
@@ -263,7 +326,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font
 
     <!-- S2: Shape -->
     <div class="sec" id="s2">
-      <div class="sec-head"><div class="sec-num">03 / 09</div><div class="sec-title">Shape</div><div class="sec-sub">전체 인상과 균형</div></div>
+      <div class="sec-head" style="display:flex;align-items:center;justify-content:space-between;"><div><div class="sec-num">03 / 09</div><div class="sec-title">Shape</div><div class="sec-sub">전체 인상과 균형</div></div><button onclick="saveClient()" style="padding:7px 13px;border:1px solid var(--accent);border-radius:7px;background:var(--accent-light);font-family:'DM Sans',sans-serif;font-size:12px;color:var(--active);cursor:pointer;flex-shrink:0;">저장</button></div>
       <div class="sec-body">
         <div class="grp">
           <div class="grp-title">형태</div>
@@ -302,13 +365,27 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font
           <span class="chip sol" data-g="shape-sol" onclick="tc(this)">산 위치 조정(앞)</span>
           <span class="chip sol" data-g="shape-sol" onclick="tc(this)">산 위치 조정(뒤)</span>
         </div>
-        <div style="margin-top:12px"><textarea class="ftextarea" id="f-shape-memo" rows="2" placeholder="메모..."></textarea></div>
+        <div style="margin-top:14px">
+          <div class="grp-title" style="margin-bottom:8px">📝 회차별 메모</div>
+          <div class="visit-row">
+            <div class="visit-date"><div class="visit-label">날짜</div><input type="date" id="sh-d1"></div>
+            <div class="visit-note"><div class="visit-label">내용</div><textarea rows="2" id="sh-n1" placeholder="이번 회차 적용 내용..."></textarea></div>
+          </div>
+          <div class="visit-row">
+            <div class="visit-date"><div class="visit-label">날짜</div><input type="date" id="sh-d2"></div>
+            <div class="visit-note"><div class="visit-label">내용</div><textarea rows="2" id="sh-n2" placeholder=""></textarea></div>
+          </div>
+          <div class="visit-row">
+            <div class="visit-date"><div class="visit-label">날짜</div><input type="date" id="sh-d3"></div>
+            <div class="visit-note"><div class="visit-label">내용</div><textarea rows="2" id="sh-n3" placeholder=""></textarea></div>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- S3: Thickness -->
     <div class="sec" id="s3">
-      <div class="sec-head"><div class="sec-num">04 / 09</div><div class="sec-title">Thickness</div><div class="sec-sub">볼륨과 인상 강도</div></div>
+      <div class="sec-head" style="display:flex;align-items:center;justify-content:space-between;"><div><div class="sec-num">04 / 09</div><div class="sec-title">Thickness</div><div class="sec-sub">볼륨과 인상 강도</div></div><button onclick="saveClient()" style="padding:7px 13px;border:1px solid var(--accent);border-radius:7px;background:var(--accent-light);font-family:'DM Sans',sans-serif;font-size:12px;color:var(--active);cursor:pointer;flex-shrink:0;">저장</button></div>
       <div class="sec-body">
         <div class="grp">
           <div class="grp-title">전체 두께</div>
@@ -335,13 +412,27 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font
           <span class="chip sol" data-g="thick-sol" onclick="tc(this)">경계 흐리기</span>
           <span class="chip sol" data-g="thick-sol" onclick="tc(this)">경계 살리기</span>
         </div>
-        <div style="margin-top:12px"><textarea class="ftextarea" id="f-thick-memo" rows="2" placeholder="메모..."></textarea></div>
+        <div style="margin-top:14px">
+          <div class="grp-title" style="margin-bottom:8px">📝 회차별 메모</div>
+          <div class="visit-row">
+            <div class="visit-date"><div class="visit-label">날짜</div><input type="date" id="th-d1"></div>
+            <div class="visit-note"><div class="visit-label">내용</div><textarea rows="2" id="th-n1" placeholder="이번 회차 적용 내용..."></textarea></div>
+          </div>
+          <div class="visit-row">
+            <div class="visit-date"><div class="visit-label">날짜</div><input type="date" id="th-d2"></div>
+            <div class="visit-note"><div class="visit-label">내용</div><textarea rows="2" id="th-n2" placeholder=""></textarea></div>
+          </div>
+          <div class="visit-row">
+            <div class="visit-date"><div class="visit-label">날짜</div><input type="date" id="th-d3"></div>
+            <div class="visit-note"><div class="visit-label">내용</div><textarea rows="2" id="th-n3" placeholder=""></textarea></div>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- S4: Texture -->
     <div class="sec" id="s4">
-      <div class="sec-head"><div class="sec-num">05 / 09</div><div class="sec-title">Texture</div><div class="sec-sub">모질 / 결</div></div>
+      <div class="sec-head" style="display:flex;align-items:center;justify-content:space-between;"><div><div class="sec-num">05 / 09</div><div class="sec-title">Texture</div><div class="sec-sub">모질 / 결</div></div><button onclick="saveClient()" style="padding:7px 13px;border:1px solid var(--accent);border-radius:7px;background:var(--accent-light);font-family:'DM Sans',sans-serif;font-size:12px;color:var(--active);cursor:pointer;flex-shrink:0;">저장</button></div>
       <div class="sec-body">
         <div class="grp">
           <div class="grp-title">모 굵기</div>
@@ -375,13 +466,27 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font
           <span class="chip sol" data-g="tex-sol" onclick="tc(this)">강한 모 → 눌러서 정돈</span>
           <span class="chip sol" data-g="tex-sol" onclick="tc(this)">약한 모 → 볼륨 살리기</span>
         </div>
-        <div style="margin-top:12px"><textarea class="ftextarea" id="f-tex-memo" rows="2" placeholder="메모..."></textarea></div>
+        <div style="margin-top:14px">
+          <div class="grp-title" style="margin-bottom:8px">📝 회차별 메모</div>
+          <div class="visit-row">
+            <div class="visit-date"><div class="visit-label">날짜</div><input type="date" id="tx-d1"></div>
+            <div class="visit-note"><div class="visit-label">내용</div><textarea rows="2" id="tx-n1" placeholder="이번 회차 적용 내용..."></textarea></div>
+          </div>
+          <div class="visit-row">
+            <div class="visit-date"><div class="visit-label">날짜</div><input type="date" id="tx-d2"></div>
+            <div class="visit-note"><div class="visit-label">내용</div><textarea rows="2" id="tx-n2" placeholder=""></textarea></div>
+          </div>
+          <div class="visit-row">
+            <div class="visit-date"><div class="visit-label">날짜</div><input type="date" id="tx-d3"></div>
+            <div class="visit-note"><div class="visit-label">내용</div><textarea rows="2" id="tx-n3" placeholder=""></textarea></div>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- S5: Density -->
     <div class="sec" id="s5">
-      <div class="sec-head"><div class="sec-num">06 / 09</div><div class="sec-title">Density</div><div class="sec-sub">밀도</div></div>
+      <div class="sec-head" style="display:flex;align-items:center;justify-content:space-between;"><div><div class="sec-num">06 / 09</div><div class="sec-title">Density</div><div class="sec-sub">밀도</div></div><button onclick="saveClient()" style="padding:7px 13px;border:1px solid var(--accent);border-radius:7px;background:var(--accent-light);font-family:'DM Sans',sans-serif;font-size:12px;color:var(--active);cursor:pointer;flex-shrink:0;">저장</button></div>
       <div class="sec-body">
         <div class="grp">
           <div class="grp-title">전체 밀도</div>
@@ -415,13 +520,27 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font
           <span class="chip sol" data-g="den-sol" onclick="tc(this)">전체 균일화</span>
           <span class="chip sol" data-g="den-sol" onclick="tc(this)">의도적 비움</span>
         </div>
-        <div style="margin-top:12px"><textarea class="ftextarea" id="f-den-memo" rows="2" placeholder="메모..."></textarea></div>
+        <div style="margin-top:14px">
+          <div class="grp-title" style="margin-bottom:8px">📝 회차별 메모</div>
+          <div class="visit-row">
+            <div class="visit-date"><div class="visit-label">날짜</div><input type="date" id="dn-d1"></div>
+            <div class="visit-note"><div class="visit-label">내용</div><textarea rows="2" id="dn-n1" placeholder="이번 회차 적용 내용..."></textarea></div>
+          </div>
+          <div class="visit-row">
+            <div class="visit-date"><div class="visit-label">날짜</div><input type="date" id="dn-d2"></div>
+            <div class="visit-note"><div class="visit-label">내용</div><textarea rows="2" id="dn-n2" placeholder=""></textarea></div>
+          </div>
+          <div class="visit-row">
+            <div class="visit-date"><div class="visit-label">날짜</div><input type="date" id="dn-d3"></div>
+            <div class="visit-note"><div class="visit-label">내용</div><textarea rows="2" id="dn-n3" placeholder=""></textarea></div>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- S6: Correction Factors -->
     <div class="sec" id="s6">
-      <div class="sec-head"><div class="sec-num">07 / 09</div><div class="sec-title">Correction Factors</div><div class="sec-sub">보정 요소</div></div>
+      <div class="sec-head" style="display:flex;align-items:center;justify-content:space-between;"><div><div class="sec-num">07 / 09</div><div class="sec-title">Correction Factors</div><div class="sec-sub">보정 요소</div></div><button onclick="saveClient()" style="padding:7px 13px;border:1px solid var(--accent);border-radius:7px;background:var(--accent-light);font-family:'DM Sans',sans-serif;font-size:12px;color:var(--active);cursor:pointer;flex-shrink:0;">저장</button></div>
       <div class="sec-body">
         <div class="grp">
           <div class="grp-title">컬러 (머리 대비)</div>
@@ -471,13 +590,27 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font
           <span class="chip sol" data-g="cor-sol" onclick="tc(this)">메이크업 간소화</span>
           <span class="chip sol" data-g="cor-sol" onclick="tc(this)">메이크업 강조</span>
         </div>
-        <div style="margin-top:12px"><textarea class="ftextarea" id="f-cor-memo" rows="2" placeholder="메모..."></textarea></div>
+        <div style="margin-top:14px">
+          <div class="grp-title" style="margin-bottom:8px">📝 회차별 메모</div>
+          <div class="visit-row">
+            <div class="visit-date"><div class="visit-label">날짜</div><input type="date" id="cr-d1"></div>
+            <div class="visit-note"><div class="visit-label">내용</div><textarea rows="2" id="cr-n1" placeholder="이번 회차 적용 내용..."></textarea></div>
+          </div>
+          <div class="visit-row">
+            <div class="visit-date"><div class="visit-label">날짜</div><input type="date" id="cr-d2"></div>
+            <div class="visit-note"><div class="visit-label">내용</div><textarea rows="2" id="cr-n2" placeholder=""></textarea></div>
+          </div>
+          <div class="visit-row">
+            <div class="visit-date"><div class="visit-label">날짜</div><input type="date" id="cr-d3"></div>
+            <div class="visit-note"><div class="visit-label">내용</div><textarea rows="2" id="cr-n3" placeholder=""></textarea></div>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- S7: 브로우 차트 -->
     <div class="sec" id="s7">
-      <div class="sec-head"><div class="sec-num">08 / 09</div><div class="sec-title">브로우 차트</div></div>
+      <div class="sec-head" style="display:flex;align-items:center;justify-content:space-between;"><div><div class="sec-num">08 / 09</div><div class="sec-title">브로우 차트</div></div><button onclick="saveClient()" style="padding:7px 13px;border:1px solid var(--accent);border-radius:7px;background:var(--accent-light);font-family:'DM Sans',sans-serif;font-size:12px;color:var(--active);cursor:pointer;flex-shrink:0;">저장</button></div>
       <div class="sec-body">
         <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">프로크리에이트에서 그린 브로우 차트를 첨부해주세요.</p>
         <div class="attach-area" id="attach-area" onclick="document.getElementById('attach-input').click()">
@@ -495,7 +628,13 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font
 
     <!-- S8: 한 줄 전략 -->
     <div class="sec" id="s8">
-      <div class="sec-head"><div class="sec-num">09 / 09</div><div class="sec-title">개인 결과지</div></div>
+      <div class="sec-head" style="display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div class="sec-num">09 / 09</div>
+          <div class="sec-title">개인 결과지</div>
+        </div>
+        <button onclick="showView('list')" style="padding:8px 14px;border:1px solid var(--border);border-radius:7px;background:none;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--muted);cursor:pointer;">← 목록</button>
+      </div>
       <div class="sec-body">
         <div class="strategy-box">
           <div class="strategy-label">핵심 한 줄 전략</div>
@@ -528,16 +667,28 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font
           <button class="dl-btn" onclick="downloadSection('s8','전략요약')">📤 고객용 이미지 저장</button>
         </div>
         <div class="action-btns">
-          <button class="act-btn act-save" onclick="saveClient()">저장하기</button>
-          <button class="act-btn act-pdf" onclick="saveClient()">기록 저장하기</button>
+<button class="act-btn act-pdf" onclick="saveClient()">기록 저장하기</button>
         </div>
       </div>
     </div>
 
   <div class="bnav">
     <button class="bnav-btn" id="bp" onclick="navGo(-1)">← 이전</button>
-    <div class="dots" id="dots"></div>
+    <button class="page-menu-btn" onclick="togglePageMenu()" id="page-menu-btn">
+      <span id="page-menu-label">01 고객 정보</span> ▾
+    </button>
     <button class="bnav-btn next" id="bn" onclick="navGo(1)">다음 →</button>
+  </div>
+  <div class="page-dropdown" id="page-dropdown">
+    <div class="page-dropdown-item active" onclick="goPage(0)"><span class="page-dropdown-num">01</span>고객 정보</div>
+    <div class="page-dropdown-item" onclick="goPage(1)"><span class="page-dropdown-num">02</span>원하는 이미지</div>
+    <div class="page-dropdown-item" onclick="goPage(2)"><span class="page-dropdown-num">03</span>Shape</div>
+    <div class="page-dropdown-item" onclick="goPage(3)"><span class="page-dropdown-num">04</span>Thickness</div>
+    <div class="page-dropdown-item" onclick="goPage(4)"><span class="page-dropdown-num">05</span>Texture</div>
+    <div class="page-dropdown-item" onclick="goPage(5)"><span class="page-dropdown-num">06</span>Density</div>
+    <div class="page-dropdown-item" onclick="goPage(6)"><span class="page-dropdown-num">07</span>Correction</div>
+    <div class="page-dropdown-item" onclick="goPage(7)"><span class="page-dropdown-num">08</span>브로우 차트</div>
+    <div class="page-dropdown-item" onclick="goPage(8)"><span class="page-dropdown-num">09</span>개인 결과지</div>
   </div>
   </div>
 </div>
@@ -565,6 +716,16 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font
     <canvas id="iri-fs-canvas" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none;z-index:10;"></canvas>
   </div>
   <div class="iri-fs-hint">두 손가락으로 확대 · 탭해서 위치 선택</div>
+</div>
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-title">기록 삭제</div>
+    <div class="confirm-msg" id="confirm-msg"></div>
+    <div class="confirm-btns">
+      <button class="confirm-cancel" onclick="closeConfirm()">취소</button>
+      <button class="confirm-ok" id="confirm-ok">삭제</button>
+    </div>
+  </div>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -607,16 +768,15 @@ async function sGet(k){
 }
 
 async function sSet(k,v){
-  lSet(k,v); // 로컬에도 저장
+  lSet(k,v);
   try{
-    // upsert
-    await supaFetch('/rest/v1/consultations','POST',{key:k,value:JSON.stringify(v)});
-  }catch{
-    // 이미 있으면 update
-    try{
+    const exists=await supaFetch(`/rest/v1/consultations?key=eq.${encodeURIComponent(k)}&select=key`);
+    if(exists&&exists.length>0){
       await supaFetch(`/rest/v1/consultations?key=eq.${encodeURIComponent(k)}`,'PATCH',{value:JSON.stringify(v)});
-    }catch(e){console.error('sSet error',e);}
-  }
+    } else {
+      await supaFetch('/rest/v1/consultations','POST',{key:k,value:JSON.stringify(v)});
+    }
+  }catch(e){console.error('sSet error',e);}
 }
 
 function showView(v){
@@ -765,7 +925,7 @@ function removeImg(){
 }
 
 // COLLECT / CLEAR
-const textIds=['f-name','f-phone','f-location','f-birth','f-referrer','f-img-concern','f-shape-memo','f-thick-memo','f-tex-memo','f-den-memo','f-cor-memo','f-strategy','f-do','f-dont','f-care'];
+const textIds=['f-name','f-phone','f-location','f-birth','f-referrer','f-img-concern','f-strategy','f-do','f-dont','f-care','sh-d1','sh-n1','sh-d2','sh-n2','sh-d3','sh-n3','th-d1','th-n1','th-d2','th-n2','th-d3','th-n3','tx-d1','tx-n1','tx-d2','tx-n2','tx-d3','tx-n3','dn-d1','dn-n1','dn-d2','dn-n2','dn-d3','dn-n3','cr-d1','cr-n1','cr-d2','cr-n2','cr-d3','cr-n3'];
 
 function collect(){
   const chips={};
@@ -826,17 +986,35 @@ async function renderList(){
   document.getElementById('s-top').textContent=top?top[0].slice(0,5):'—';
   const lb=document.getElementById('list-body');
   if(!clients.length){lb.innerHTML='<div class="empty"><div class="empty-icon">✦</div><div class="empty-txt">아직 상담 기록이 없어요</div></div>';return;}
+  allClients=clients;
+  renderCards(clients);
+}
+let allClients=[];
+function getAge(birth){
+  if(!birth)return'';
+  const y=parseInt(birth);
+  if(isNaN(y))return'';
+  return `${new Date().getFullYear()-y}세`;
+}
+function renderCards(clients){
+  const lb=document.getElementById('list-body');
+  if(!clients.length){lb.innerHTML='<div class="empty"><div class="empty-icon">✦</div><div class="empty-txt">검색 결과가 없어요</div></div>';return;}
   lb.innerHTML=clients.map(c=>`
     <div class="card" onclick="openClient('${c.id}')">
+      <button class="card-del" onclick="event.stopPropagation();deleteClient('${c.id}','${(c.texts?.['f-name']||'이름없음').replace(/'/g,'')}')" title="삭제">✕</button>
       <div class="card-top">
         <div class="card-name">${c.texts?.['f-name']||'이름없음'}</div>
         <div class="card-date">${c.date||''}</div>
       </div>
-      <div class="card-tags">
+      <div style="display:flex;gap:12px;margin-top:6px;font-size:11px;color:var(--muted);">
+        ${c.texts?.['f-phone']?`<span>📞 ${c.texts['f-phone']}</span>`:''}
+        ${c.texts?.['f-location']?`<span>📍 ${c.texts['f-location']}</span>`:''}
+        ${c.texts?.['f-birth']?`<span>🎂 ${getAge(c.texts['f-birth'])}</span>`:''}
+      </div>
+      <div class="card-tags" style="padding-right:60px">
         ${(c.chips?.visit||[]).map(v=>`<span class="tag hi">${v}</span>`).join('')}
-        ${(c.chips?.shape||[]).map(v=>`<span class="tag">${v}</span>`).join('')}
-        ${c.cycle?`<span class="tag">${c.cycle}</span>`:''}
-        ${c.texts?.['f-strategy']?`<span class="tag" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.texts['f-strategy'].slice(0,26)}${c.texts['f-strategy'].length>26?'…':''}</span>`:''}</div>
+        ${(c.chips?.channel||[]).map(v=>`<span class="tag">${v}</span>`).join('')}</div>
+      <button class="card-del-btn" onclick="event.stopPropagation();showConfirm('${c.id}','${(c.texts?.['f-name']||'이름없음').replace(/'/g,"\'")}')">삭제</button>
     </div>`).join('');
 }
 
@@ -900,7 +1078,10 @@ function updSecs(){
   document.querySelectorAll('.sec').forEach((s,i)=>{s.classList.remove('on');if(i===curSec)s.classList.add('on');});
   document.getElementById('bp').disabled=false;
   document.getElementById('bn').textContent=curSec===TOTAL-1?'완료':'다음 →';
-  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('on',i===curSec));
+  // 드롭다운 레이블 업데이트
+  const num=String(curSec+1).padStart(2,'0');
+  document.getElementById('page-menu-label').textContent=`${num} ${PAGE_NAMES[curSec]}`;
+  document.querySelectorAll('.page-dropdown-item').forEach((el,i)=>el.classList.toggle('active',i===curSec));
   if(curSec===1)setTimeout(drawIRIDots,100);
 }
 function navGo(d){
@@ -908,8 +1089,23 @@ function navGo(d){
   if(curSec===0&&d===-1){showView('list');return;}
   curSec=Math.max(0,Math.min(TOTAL-1,curSec+d));updSecs();
 }
-const dotsEl=document.getElementById('dots');
-for(let i=0;i<TOTAL;i++){const d=document.createElement('div');d.className='dot'+(i===0?' on':'');d.onclick=()=>{curSec=i;updSecs();};dotsEl.appendChild(d);}
+// 페이지 드롭다운
+const PAGE_NAMES=['고객 정보','원하는 이미지','Shape','Thickness','Texture','Density','Correction','브로우 차트','개인 결과지'];
+function togglePageMenu(){
+  const dd=document.getElementById('page-dropdown');
+  dd.classList.toggle('on');
+  // 바깥 클릭시 닫기
+  if(dd.classList.contains('on')){
+    setTimeout(()=>document.addEventListener('click',closePageMenu,{once:true}),10);
+  }
+}
+function closePageMenu(){
+  document.getElementById('page-dropdown').classList.remove('on');
+}
+function goPage(i){
+  curSec=i;updSecs();
+  closePageMenu();
+}
 
 // DOWNLOAD
 async function downloadSection(secId,filename){
@@ -1057,6 +1253,47 @@ function redrawFSMarkers(){
   mark(iriMarkers.pro.x,iriMarkers.pro.y,'rgba(80,170,255,0.5)','rgba(20,90,200,0.95)','추천');
 }
 
+
+function showConfirm(id,name){
+  document.getElementById('confirm-msg').textContent=`'${name}' 고객 기록을 삭제할까요? 삭제 후 복구할 수 없어요.`;
+  document.getElementById('confirm-overlay').classList.add('on');
+  document.getElementById('confirm-ok').onclick=()=>deleteClient(id,name);
+}
+function closeConfirm(){
+  document.getElementById('confirm-overlay').classList.remove('on');
+}
+async function deleteClient(id,name){
+  closeConfirm();
+  try{
+    await supaFetch(`/rest/v1/consultations?key=eq.c:${encodeURIComponent(id)}`,'DELETE');
+    let idx=await sGet('idx')||[];
+    idx=idx.filter(i=>i!==id);
+    await sSet('idx',idx);
+    localStorage.removeItem('c:'+id);
+    // 검색어 유지하면서 목록 갱신
+    allClients=allClients.filter(c=>c.id!==id);
+    const q=document.getElementById('search-input')?.value||'';
+    if(q.trim()){filterList(q);}else{renderCards(allClients);}
+    // 통계 카운터 전체 업데이트
+    const now=new Date();
+    const thisMonth=allClients.filter(c=>c.date&&c.date.startsWith(now.toISOString().slice(0,7))).length;
+    document.getElementById('s-total').textContent=allClients.length;
+    document.getElementById('s-month').textContent=thisMonth;
+    showToast('삭제됐어요');
+  }catch(e){
+    console.error(e);
+    showToast('삭제 실패. 다시 시도해주세요.');
+  }
+}
+
+function filterList(q){
+  if(!q.trim()){renderCards(allClients);return;}
+  const filtered=allClients.filter(c=>{
+    const name=c.texts?.['f-name']||'';
+    return name.toLowerCase().includes(q.toLowerCase());
+  });
+  renderCards(filtered);
+}
 
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2400);}
 
