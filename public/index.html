@@ -760,7 +760,18 @@ async function supaFetch(path,method='GET',body=null){
 
 
 async function sGet(k){
-  // 로컬 우선 반환 후 Supabase에서 최신값 가져오기
+  // 로컬 캐시 먼저 반환 (빠름)
+  const cached=lGet(k);
+  // 백그라운드에서 Supabase 동기화
+  supaFetch(`/rest/v1/consultations?key=eq.${encodeURIComponent(k)}&select=value`)
+    .then(rows=>{
+      if(rows&&rows.length>0){
+        const val=JSON.parse(rows[0].value);
+        lSet(k,val);
+      }
+    }).catch(()=>{});
+  if(cached!==null) return cached;
+  // 캐시 없으면 기다림
   try{
     const rows=await supaFetch(`/rest/v1/consultations?key=eq.${encodeURIComponent(k)}&select=value`);
     if(rows&&rows.length>0){
@@ -768,8 +779,8 @@ async function sGet(k){
       lSet(k,val);
       return val;
     }
-    return lGet(k);
-  }catch{return lGet(k);}
+    return null;
+  }catch{return null;}
 }
 
 async function sSet(k,v){
