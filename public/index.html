@@ -1017,7 +1017,9 @@ function newChart(){editId=null;clearForm();curSec=0;updSecs();showView('chart')
 
 // LIST
 async function renderList(){
-  const idx=await sGet('idx')||[];
+  const idxRaw=await sGet('idx')||[];
+  // 중복 제거
+  const idx=[...new Set(idxRaw)];
   const clients=[];
   for(const id of idx){const c=await sGet('c:'+id);if(c)clients.push(c);}
   clients.sort((a,b)=>b.savedAt.localeCompare(a.savedAt));
