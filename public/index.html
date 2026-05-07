@@ -743,6 +743,9 @@ let activeMarker=null;
 const cvBound=new Set();
 
 // ── Supabase 설정 ──
+function lGet(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch{return null;}}
+function lSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
+
 // Supabase 키는 서버에서 관리 (Vercel 환경변수)
 async function supaFetch(path,method='GET',body=null){
   const cleanPath=path.replace(/^\/rest\/v1\//,'');
