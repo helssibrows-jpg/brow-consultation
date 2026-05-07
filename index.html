@@ -1071,8 +1071,14 @@ async function openClient(id){
   editId=id;clearForm();
   if(d.date)document.getElementById('f-date').value=d.date;
   if(d.texts)Object.entries(d.texts).forEach(([k,v])=>{const el=document.getElementById(k);if(el)el.value=v||'';});
-  if(d.chips)Object.entries(d.chips).forEach(([,vals])=>vals.forEach(v=>{
-    document.querySelectorAll('.chip').forEach(c=>{if(c.textContent.trim()===v)c.classList.add('on');});
+  if(d.chips)Object.entries(d.chips).forEach(([g,vals])=>vals.forEach(v=>{
+    document.querySelectorAll(g==='misc'?'.chip':`.chip[data-g="${g}"],.chip:not([data-g])`).forEach(c=>{
+      if(g==='misc'){
+        if(!c.dataset.g&&c.textContent.trim()===v) c.classList.add('on');
+      } else {
+        if(c.dataset.g===g&&c.textContent.trim()===v) c.classList.add('on');
+      }
+    });
   }));
   if(d.cycle)document.querySelectorAll('.cycle-chip').forEach(c=>{if(c.textContent===d.cycle)c.classList.add('on');});
   if(d.iriMarkers){iriMarkers=d.iriMarkers;setTimeout(drawIRIDots,200);}
